@@ -3,7 +3,6 @@ title: "Produire des documents avec Quarto"
 author: "Xavier Timbeau"
 format: 
   revealjs:
-    incremental: true
     theme: simple
     logo: ofce.png
     footer: "quarto"
@@ -44,6 +43,27 @@ gg |>
 plotly::ggplotly(gg)
 ```
 
+## le package `{ofce}` {.smaller}
+
+
+:::{.incremental}
+
+-   des palettes de couleur
+
+    -   *designed by Paul Malliet*
+
+-   fonctions pour enregistrer les graphiques au format svg ou png
+
+    -   en résolvant la taille des polices de caractère,
+
+-   des fonctions pour accéder à eurostat facilement,
+
+    -   demain aux données de l'OCDE ou d'eikon
+
+-  pour l'installer `devtools::install_github("ofce/ofce")`(penser à le faire souvent pour les MAJ)
+
+:::
+
 ## Quarto
 
 Quarto est un ensemble de fonctions qui permettent:
@@ -71,11 +91,11 @@ Quarto est un ensemble de fonctions qui permettent:
 
 ## Des `render` vers de nombreux formats
 
--   HTML ; pdf (latex) ; word
+-   HTML ; pdf (latex) ; word ; powerpoint (non pas Excel)
 
--   reveal js (pour une présentation)
+-   revealjs (pour une présentation, comme ici)
 
--   un blog (un site web complet)
+-   un blog (ou un site web complet)
 
 -   Le même document `.qmd` génère les différents formats
 
@@ -87,7 +107,7 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   Il peut être édité par différents programmes dont RStudio
 
-    -   qui bénéficie d'un mode `visual`, où l'on prévisualise l'aspect, les équations et où on peut coller des images provenant de n'importe où. (des copies d'écran comme ici).
+    -   qui bénéficie d'un mode `visual`, où l'on prévisualise l'aspect, les équations et où on peut coller des images provenant de n'importe où. (des copies d'écran comme ici, mais aussi des graphiques excel).
 
 ## Le `.qmd` est un fichier texte
 
@@ -165,8 +185,8 @@ ou
 
 ## quarto et Posit
 
-RStudio devient Posit, pour marquer que ce n'est pas spécialisé à R
+-   RStudio devient Posit, pour marquer que ce n'est pas spécialisé à R
 
-Quarto doit pouvoir s'utiliser dans une grande variété d'éditeurs/environnement
+-   Quarto va pouvoir s'utiliser dans une grande variété d'éditeurs/environnement
 
-Développer des templates, de modèles pour simplifier la production
+-   Anissa S. et quelques autres développent en ce moment même des templates
