@@ -37,17 +37,15 @@ gg |>
 :::
 :::
 
-## avec des graphiques interactifs
+## avec des graphiques interactifs {transition="fade" transition-speed="fast"}
 
 ```{r}
 plotly::ggplotly(gg)
 ```
 
-## le package `{ofce}` {.smaller}
+## le package `{ofce}`  {.smaller}
 
-
-:::{.incremental}
-
+::: incremental
 -   des palettes de couleur
 
     -   *designed by Paul Malliet*
@@ -60,8 +58,9 @@ plotly::ggplotly(gg)
 
     -   demain aux données de l'OCDE ou d'eikon
 
--  pour l'installer `devtools::install_github("ofce/ofce")`(penser à le faire souvent pour les MAJ)
+-   pour l'installer `devtools::install_github("ofce/ofce")`(penser à le faire souvent pour les MAJ)
 
+-   maintenu par XT, PM, MD, AS
 :::
 
 ## Quarto
