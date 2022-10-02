@@ -1,0 +1,172 @@
+---
+title: "Produire des documents avec Quarto"
+author: "Xavier Timbeau"
+format: 
+  revealjs:
+    incremental: true
+    theme: simple
+    logo: ofce.png
+    footer: "quarto"
+editor: visual
+---
+
+## Produire des graphiques
+
+En utilisant `{ggplot2}`, on a vu comment produire des graphiques
+
+le package `{ofce}` permet de les mettre en forme
+
+::: columns
+::: {.column width="70%"}
+```{r}
+library(tidyverse)
+library(ofce)
+data <- ofce::sna_get("prc_hicp_midx") |> 
+  filter(unit=="I15", coicop=="CP00", geo=="FR")
+gg <- (ggplot(data)+geom_line(aes(x=time, y=values))+
+  xlab(NULL)+ylab(NULL)+
+  labs(title="FRANCE, Indice des prix à la consommation")+
+  theme_ofce(base_family = "sans") )
+gg |> 
+  add_label_unit("en 2015") |> 
+  add_logo_ofce()
+```
+:::
+
+::: {.column width="30%"}
+![](images/paste-5C081886.png){width="370"}
+:::
+:::
+
+## avec des graphiques interactifs
+
+```{r}
+plotly::ggplotly(gg)
+```
+
+## Quarto
+
+Quarto est un ensemble de fonctions qui permettent:
+
+-   éditer un document en markdown (HTML simplifié)
+
+-   avec des équations (latex)
+
+-   ajouter du code (R, phython, Julia) dans des `code chunks`
+
+-   intégrer des graphiques ou des tableaux
+
+-   intégrer des éléments plus complexes
+
+## Des éléments complexes
+
+-   une table des matières, des figures, des tableaux
+
+-   des références bibliographiques
+
+-   des références croisées (lien vers une section, un autre document)
+
+-   un morceau de document avec\
+    `{{< include xxx.qmd >}}`
+
+## Des `render` vers de nombreux formats
+
+-   HTML ; pdf (latex) ; word
+
+-   reveal js (pour une présentation)
+
+-   un blog (un site web complet)
+
+-   Le même document `.qmd` génère les différents formats
+
+    Le `yaml` du document en précise les options:
+
+    ![](images/paste-BD12C090.png){width="519"}
+
+## Le `.qmd` est un fichier texte
+
+-   Il peut être édité par différents programmes dont RStudio
+
+    -   qui bénéficie d'un mode `visual`, où l'on prévisualise l'aspect, les équations et où on peut coller des images provenant de n'importe où. (des copies d'écran comme ici).
+
+## Le `.qmd` est un fichier texte
+
+-   Il peut être mis sur github pour travailler à plusieurs sur un même fichier
+
+    -   avec la gestion des conflits, le retour en arrière et le versionning
+
+        ![](images/paste-DC991B9B.png){width="474"}
+
+    -   les images sont dans un dossier à part
+
+## Les sorties peuvent être préformatées
+
+-   pdf/Latex
+
+    -   modèle de document ou préambule latex, assurant une mise en page automatique
+
+    -   on peut ajouter des balises latex pour des détails
+
+-   HTML
+
+    -   thème
+
+-   Word
+
+    -   feuilles de style
+
+## Quelques exemples de workflow : SIWU {.smaller}
+
+-   Du code R avec des données téléchargées, traitées
+
+-   Des graphiques produits avec `ggplot2`, des tableaux avec `gt`
+
+-   un travail collaboratif avec François G. et Guillaume A. avec `github`
+
+-   différentes sorties :
+
+    -   un post en html
+
+    -   un document en pdf, mis à jour chaque mois
+
+    -   un site intégrant du shiny (en construction)
+
+-   Une seule source pour les graphiques et le texte
+
+## Ce qui donne
+
+[lien vers le pdf de](SIWU_brief.pdf) [SIWU](SIWU_brief.pdf)
+
+ou
+
+[lien vers SIWU en HTML](SIWU_brief.html)
+
+## Quelques exemples de workflow : MEAPS {.smaller}
+
+-   Du code R avec des calculs
+
+    -   plusieurs collaborateurs (dont Maxime P.)
+
+-   Un document complexe avec équations, ref croisées, biblio
+
+-   Différentes sorties :
+
+    -   Des graphiques
+
+    -   Des données
+
+    -   un pdf/word à la demande
+
+    -   des présentations
+
+## Le futur workflow de l'OFCE
+
+![](images/paste-B179573D.png)
+
+## quarto et Posit
+
+RStudio devient Posit, pour marquer que ce n'est pas spécialisé à R
+
+Quarto doit pouvoir s'utiliser dans une grande variété d'éditeurs/environnement
+
+Développer des templates, de modèles pour simplifier la production
