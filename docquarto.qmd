@@ -186,7 +186,7 @@ ou
 
 ![](images/paste-B179573D.png)
 
-## Quarto et Posit  {.smaller}
+## Quarto et Posit {.smaller}
 
 -   RStudio devient Posit, pour marquer que ce n'est pas spécialisé à R
 
