@@ -37,13 +37,13 @@ gg |>
 :::
 :::
 
-## avec des graphiques interactifs {transition="fade" transition-speed="fast"}
+## avec des graphiques interactifs {transition="fade" transition-speed="slow"}
 
 ```{r}
 plotly::ggplotly(gg)
 ```
 
-## le package `{ofce}`  {.smaller}
+## le package `{ofce}` {.smaller}
 
 ::: incremental
 -   des palettes de couleur
@@ -77,6 +77,8 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   intégrer des éléments plus complexes
 
+-   et des documents structurés (livre avec chapitres)
+
 ## Des éléments complexes
 
 -   une table des matières, des figures, des tableaux
@@ -85,14 +87,14 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   des références croisées (lien vers une section, un autre document)
 
--   un morceau de document avec\
+-   des morceaux de document avec\
     `{{< include xxx.qmd >}}`
 
 ## Des `render` vers de nombreux formats
 
--   HTML ; pdf (latex) ; word ; powerpoint (non pas Excel)
+-   HTML ; pdf (latex) ; latex ; word ; powerpoint (non pas Excel)
 
--   revealjs (pour une présentation, comme ici)
+-   revealjs (pour une présentation, comme ici), beamer, pptx
 
 -   un blog (ou un site web complet)
 
@@ -106,7 +108,7 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   Il peut être édité par différents programmes dont RStudio
 
-    -   qui bénéficie d'un mode `visual`, où l'on prévisualise l'aspect, les équations et où on peut coller des images provenant de n'importe où. (des copies d'écran comme ici, mais aussi des graphiques excel).
+    -   mode `visual`, où l'on prévisualise l'aspect, les équations et où on peut coller des images provenant de n'importe où. (des copies d'écran comme ici, mais aussi des graphiques excel).
 
 ## Le `.qmd` est un fichier texte
 
@@ -140,7 +142,9 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   Des graphiques produits avec `ggplot2`, des tableaux avec `gt`
 
--   un travail collaboratif avec François G. et Guillaume A. avec `github`
+-   un travail collaboratif avec François G.
+    et Guillaume A.
+    avec `github`
 
 -   différentes sorties :
 
@@ -182,10 +186,17 @@ ou
 
 ![](images/paste-B179573D.png)
 
-## quarto et Posit
+## Quarto et Posit  {.smaller}
 
 -   RStudio devient Posit, pour marquer que ce n'est pas spécialisé à R
 
 -   Quarto va pouvoir s'utiliser dans une grande variété d'éditeurs/environnement
 
--   Anissa S. et quelques autres développent en ce moment même des templates
+-   il reste quelques bugs dans RStudio, mais c'est utilisable
+
+-   Anissa S.
+    et quelques autres développent en ce moment même des templates
+
+-   [La documentation complète de Quarto](https://quarto.org/docs/guide/)
+
+![quarto est le format d'impression d'un petit livre](http://j387mediahistory.weebly.com/uploads/6/4/2/2/6422481/quarto2.jpg){fig-align="right" width="210"}
