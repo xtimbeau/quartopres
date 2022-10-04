@@ -1,3 +1,3 @@
 # quartopres
  
-[Lien vers la présentaion](./quartopres.html)
+[Lien vers la présentation](./docquarto.html)
