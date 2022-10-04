@@ -3,7 +3,7 @@ title: "Produire des documents avec Quarto"
 author: "Xavier Timbeau"
 format: 
   revealjs:
-    theme: simple
+    theme: beige
     logo: ofce.png
     footer: "quarto"
 editor: visual
@@ -142,9 +142,7 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   Des graphiques produits avec `ggplot2`, des tableaux avec `gt`
 
--   un travail collaboratif avec François G.
-    et Guillaume A.
-    avec `github`
+-   un travail collaboratif avec François G. et Guillaume A. avec `github`
 
 -   différentes sorties :
 
@@ -194,9 +192,8 @@ ou
 
 -   il reste quelques bugs dans RStudio, mais c'est utilisable
 
--   Anissa S.
-    et quelques autres développent en ce moment même des templates
+-   Anissa S. et quelques autres développent en ce moment même des templates
 
 -   [La documentation complète de Quarto](https://quarto.org/docs/guide/)
 
-![quarto est le format d'impression d'un petit livre](http://j387mediahistory.weebly.com/uploads/6/4/2/2/6422481/quarto2.jpg){fig-align="right" width="210"}
+![quarto est le format d'impression d'un petit livre au début de l'imprimerie](http://j387mediahistory.weebly.com/uploads/6/4/2/2/6422481/quarto2.jpg){fig-align="center" width="210"}
