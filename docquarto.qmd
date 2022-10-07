@@ -6,6 +6,10 @@ format:
     theme: simple
     logo: ofce.png
     footer: "quarto"
+    preview-links: auto
+    slide-tone: true
+    progress: true
+    chalkboard: true
 editor: visual
 ---
 
