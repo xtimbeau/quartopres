@@ -43,7 +43,7 @@ gg |>
 plotly::ggplotly(gg)
 ```
 
-## le package `{ofce}`  {.smaller}
+## le package `{ofce}` {.smaller}
 
 ::: incremental
 -   des palettes de couleur
