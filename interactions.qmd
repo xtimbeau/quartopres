@@ -183,13 +183,19 @@ sources: eikon&Datastream
 
 ## références
 
--   l'aide de quarto est le point de départ :
+-   cette présentation : [xtimbeau/quartopres (github.com)](https://github.com/xtimbeau/quartopres), public
 
-[quarto](https://quarto.org/docs)
+-   l'aide de quarto est le point de départ : [quarto](https://quarto.org/docs)
 
 -   l'interactivité repose sur des htmlwigets pour R :
 
-[Leaflet](http://rstudio.github.io/leaflet/) (cartes), [Plotly](https://plot.ly/r/) (démontrés dans cette présentation), [dygraphs](http://rstudio.github.io/dygraphs/) (alternative pour les séries temporelles), [threejs](https://bwlewis.github.io/rthreejs/) (avec des possibilités spectaculaires)
+    -   [Leaflet](http://rstudio.github.io/leaflet/) (cartes, tmap utilise leaflet),
+
+    -   [Plotly](https://plot.ly/r/) (démontrés dans cette présentation),
+
+    -   [dygraphs](http://rstudio.github.io/dygraphs/) (alternative pour les séries temporelles),
+
+    -   [threejs](https://bwlewis.github.io/rthreejs/) (avec des possibilités spectaculaires)
 
 -   Le livre (gratuit) [Interactive web-based data visualization with R, plotly, and shiny](https://plotly-r.com/index.html)
 
