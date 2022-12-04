@@ -1,0 +1,196 @@
+---
+title: "Faire beau, utile et moderne"
+subtitle: "Des graphiques interactifs dans les documents html ou dasn les présentations"
+date: 5/12/2022
+author: Xavier Timbeau
+institute: "*OFCE/Sciences Po*"
+lang: fr
+title-block-banner: true
+format: 
+  html:
+    theme: simple
+    code-fold: true
+  revealjs:
+    theme: [simple, custom.scss]
+    logo: ofce.png
+    incremental: false
+    progress: true
+    fig-align: center
+    code-fold: true
+    reveal_options:
+      minScale: 1.0
+      maxScale: 1.0
+editor: visual
+---
+
+## Pourquoi interactif ? {.smaller}
+
+-   au delà d'une simple image, on peut :
+
+    -   accroître l'information montrée par le graphique
+
+    -   zoomer sur une plage de l'axe des abscisses ou des ordonnées
+
+    -   lire un chiffre ou une date précisément
+
+    -   ajouter des informations contextuelles
+
+    -   présenter une famille de graphiques indexées par un paramètre en réduisant la charge du graphique
+
+-   ce qui permet :
+
+    -   d'augmenter la portée du graphique
+
+    -   de simplifier la présentation
+
+    -   d'adapter la présentation aux choix de l'utilisateur
+
+    -   de répondre à son attente
+
+## une carte : l'interactivité est attendue \[moderne, utile\]
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(tmap)
+tmap_mode("view")
+load("newgtfs.rda")
+tm_shape(res$routes_sf)+tm_lines(col="route_id", lwd=3) +
+  tm_shape(res$am_stop_name_departures)+tm_dots(size=0.02, col="purple", alpha=0.5)
+```
+
+## Un graphique "mort" \[beau, utile\] {.smaller}
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ofce)
+library(ggh4x)
+
+cocol <- qs::qread("data/coicops.qs") |> pull(color, name = coicop)
+gcom <- qs::qread("data/gcom.qs") 
+load("data/gcom.rdata")
+CMOr <- CMOr |> mutate(
+  text = glue::glue(str_c(
+    "{variable}",
+    "obs. on: {format(time, format = '%B %Y')}",
+    "real price index (2018=100): {round(pcom_real,1)}",
+    "nominal price {prettyNum(epcom, digits=3, format='fg', big.mark = ',')} {eunit}", sep="<br>")))
+
+selected <- CMOr |>
+  distinct(variable, type) |> 
+  filter(type!="unknown") |>
+  group_by(type) |> 
+  slice_sample(n=1) |>
+  pull(variable)
+
+caption <- str_c(
+  "Sources : World Bank Commodity Markets, Eurostat HICP monthly since 1990, INSEE National Accounts, OECD EO110")
+
+g <- ggplot(CMOr |> filter(variable %in% selected))+
+  geom_line(
+    aes(x=time, y=pcom_real, 
+                color=type, group=variable,
+                text=text), 
+    show.legend = FALSE, linewidth=0.25)+
+  scale_y_log10(
+    breaks = scales::log_breaks(10), 
+    minor_breaks = scales::log_breaks(16),
+    guide = "axis_minor")+
+  # geom_text(data=CMOd |> filter(type!="unknown"), 
+  #           aes(x=ymd("1960-04-01"), y=22, label=last_text, color= type), 
+  #           hjust=0, vjust=1, size=7/.pt, show.legend=FALSE)+
+  scale_color_manual(
+    values = c(food = cocol[["CP01"]], 
+               nrg = cocol[["CP07"]], 
+               fer = cocol[["CP05"]])) +
+  xlab("")+ylab("")+
+  facet_wrap(vars(variable), ncol = 1)+
+  labs(
+    title = "",
+    subtitle = "",
+    caption = caption) +
+  theme_ofce(base_family="Arial", base_size=9)+
+  scale_x_date(
+    guide="axis_minor", 
+    date_minor_breaks = "1 year",
+    date_labels = "%Y") 
+
+g
+
+```
+
+## + tooltip + sélection de la date \[beau, utile, moderne, facile\] {.smaller .scrollable}
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE }
+library(plotly)
+
+(g %+% theme(text = element_text(family = "arial", size = 9))) |>
+  plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE,
+                   width = 900, height = 600) |> 
+  layout(
+    yaxis = list(fixedrange=TRUE),
+    showlegend = FALSE,
+    xaxis = list(fixedrange=TRUE, rangeslider=list(visible=TRUE)),
+    hovermode = "x unified") |>  
+  config(displayModeBar=FALSE)
+```
+
+::: {style="color: gray; font-size: 14pt"}
+sources: www.worldbank.org/en/research/commodity-markets, logscale, alt-click pour zoomer
+:::
+
+## + sélection par légende \[beau, utile, moderne, facile\]
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+load("data/comday.rdata")
+
+ggplotly(comday, tooltip = "text",
+               width = 1000,
+               height = 600) |>
+  layout(showlegend=TRUE,
+         legend = list(x=0, y=-0.1, orientation="h"),
+         xaxis = list(fixedrange=TRUE, rangeslider=list(visible=TRUE)),
+         yaxis = list(fixedrange=TRUE),
+         hovermode = "x unified") |>
+  config(displayModeBar=FALSE)
+
+```
+
+::: {style="color: gray; font-size: 14pt"}
+sources: eikon&Datastream
+:::
+
+## + on simplifie par légende \[beau, utile, moderne, facile\]
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+load("data/comday.rdata")
+
+ggplotly(comday, tooltip = "text",
+               width = 1000,
+               height = 600) |>
+  layout(showlegend=TRUE,
+         legend = list(x=0, y=-0.1, orientation="h"),
+         xaxis = list(fixedrange=FALSE),
+         yaxis = list(fixedrange=TRUE),
+         hovermode = "closest") |>
+  config(displayModeBar=FALSE)
+
+```
+
+::: {style="color: gray; font-size: 14pt"}
+sources: eikon&Datastream
+:::
+
+## références
+
+-   l'aide de quarto est le point de départ :
+
+[quarto](https://quarto.org/docs)
+
+-   l'interactivité repose sur des htmlwigets pour R :
+
+[Leaflet](http://rstudio.github.io/leaflet/) (cartes), [Plotly](https://plot.ly/r/) (démontrés dans cette présentation), [dygraphs](http://rstudio.github.io/dygraphs/) (alternative pour les séries temporelles), [threejs](https://bwlewis.github.io/rthreejs/) (avec des possibilités spectaculaires)
+
+-   Le livre (gratuit) [Interactive web-based data visualization with R, plotly, and shiny](https://plotly-r.com/index.html)
+
+![](images/image-417972003.png){fig-align="right" width="105"}

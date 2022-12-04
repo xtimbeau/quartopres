@@ -1,0 +1,29 @@
+/*-- scss:defaults --*/
+// gris ofce
+$scpored: #e6142d;
+$body-bg: #fff;
+$body-color: #222;
+$link-color: #42affa;
+$presentation-heading-color: #fd0314;
+$presentation-h1-font-size: 2em;
+$presentation-h2-font-size: 1em;
+$presentation-h3-font-size: 1em;
+$presentation-font-size-root: 32px;
+/*-- scss:rules --*/
+
+.reveal section h2 {
+  color: #fff;
+  background-color: $scpored;
+  padding-left: 20px;
+  padding-bottom: 5px;
+  letter-spacing: 2px;
+}
+
+.reveal h2::before {
+  content:"> ";
+}
+
+.reveal .slide blockquote {
+  border-left: 3px solid $text-muted;
+  padding-left: 0.5em;
+}

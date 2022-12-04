@@ -1,0 +1,105 @@
+---
+  title: "Faire beau, utile et moderne"
+subtitle: "Des graphiques interactifs dans les documents html ou dasn les présentations"
+date: 5/12/2022
+author: Xavier Timbeau
+institute: "*OFCE/Sciences Po*"
+lang: fr
+title-block-banner: true
+server: shiny
+format: 
+  html:
+  theme: simple
+code-fold: true
+revealjs:
+  theme: [simple, custom.scss]
+logo: ofce.png
+incremental: false
+progress: true
+fig-align: center
+code-fold: true
+reveal_options:
+  minScale: 1.0
+maxScale: 1.0
+editor: visual
+---
+  
++ interaction avancée avec shiny
+
+{r}
+library(shiny)
+library(tidyverse)
+library(plotly)
+library(ofce)
+library(ggh4x)
+
+load("data/gcom.rdata")
+
+selectInput(
+  "commodity",
+  "Commodity",
+  choices = CMOr |> filter(type!="unknown") |> pull(variable) |> unique(),
+  selected = c("Natural gas, Europe", "Crude oil, Brent", "Sunflower oil"),
+  multiple = TRUE)
+plotlyOutput("comPlot")
+
+{r}
+#| context: server
+library(shiny)
+library(tidyverse)
+library(plotly)
+library(ofce)
+library(ggh4x)
+
+cocol <- qs::qread("data/coicops.qs") |> pull(color, name = coicop)
+gcom <- qs::qread("data/gcom.qs") 
+load("data/gcom.rdata")
+CMOr <- CMOr |> mutate(
+  text = glue::glue(str_c(
+    "{variable}",
+    "obs. on: {format(time, format = '%B %Y')}",
+    "real price index (2018=100): {round(pcom_real,1)}",
+    "nominal price {prettyNum(epcom, digits=3, format='fg', big.mark = ',')} {eunit}", sep="<br>")))
+output$comPlot <- renderPlotly({
+  g <- ggplot(CMOr |> filter(variable %in% input$commodity))+
+    geom_line(aes(x=time, y=pcom_real, 
+                  color=type, group=variable,
+                  text=text), 
+              show.legend = FALSE, size=0.25)+
+    scale_y_log10(breaks = scales::log_breaks(10), 
+                  minor_breaks = scales::log_breaks(16),
+                  guide = "axis_minor")+
+    # geom_text(data=CMOd |> filter(type!="unknown"), 
+    #           aes(x=ymd("1960-04-01"), y=22, label=last_text, color= type), 
+    #           hjust=0, vjust=1, size=7/.pt, show.legend=FALSE)+
+    scale_color_manual(values = c(food = cocol[["CP01"]], 
+                                  nrg = cocol[["CP07"]], 
+                                  fer = cocol[["CP05"]])) +
+    xlab(NULL)+ylab(NULL)+
+    facet_wrap(vars(variable), ncol = 1)+
+    labs(
+      title = NULL,
+      subtitle = NULL,
+      caption = 
+        str_c(
+          "Last data point for {ld_str}, real prices using France price and exhange rate indexes, 2018=100, log 10 scale" |> glue::glue(),
+          "Sources : World Bank Commodity Markets (www.worldbank.org/en/research/commodity-markets)",
+          "Eurostat HICP monthly since 1990, INSEE National accounts from 1960 to 1990 for price index (France)",
+          "OECD EO110 for exhange rate FRA/USD, EUR/USD", 
+          sep="\n"))+
+    theme_ofce()+
+    scale_x_date(guide="axis_minor", 
+                 date_minor_breaks = "1 year", 
+                 date_labels = "%Y") +
+    theme(panel.spacing = unit(8, "pt"))
+  
+  (g %+% theme(text = element_text(family = "arial", size = 9))) |>
+    plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE,
+                     width = 900, height = 600) |> 
+    layout(
+      yaxis = list(fixedrange=TRUE),
+      showlegend = FALSE,
+      xaxis = list(fixedrange=TRUE, rangeslider=list(visible=TRUE))) |>  
+    config(displayModeBar=FALSE)
+})
+

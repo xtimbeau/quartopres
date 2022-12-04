@@ -1,5 +1,11 @@
 {
   "docquarto.qmd": {
     "docquarto.html": "4fea885d"
+  },
+  "interactions.qmd": {
+    "interactions.html": "e3aca416"
+  },
+  "interactions shiny.qmd": {
+    "interactions shiny.html": "3fb0bf00"
   }
 }
