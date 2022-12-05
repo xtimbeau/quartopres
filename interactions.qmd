@@ -57,7 +57,7 @@ tm_shape(res$routes_sf)+tm_lines(col="route_id", lwd=3) +
   tm_shape(res$am_stop_name_departures)+tm_dots(size=0.02, col="purple", alpha=0.5)
 ```
 
-## Un graphique "mort" \[beau, utile\] {.smaller}
+## Un graphique \[beau, utile\] {.smaller}
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -78,7 +78,7 @@ selected <- CMOr |>
   distinct(variable, type) |> 
   filter(type!="unknown") |>
   group_by(type) |> 
-  slice_sample(n=1) |>
+  slice_sample(n=2) |>
   pull(variable)
 
 caption <- str_c(
@@ -94,15 +94,11 @@ g <- ggplot(CMOr |> filter(variable %in% selected))+
     breaks = scales::log_breaks(10), 
     minor_breaks = scales::log_breaks(16),
     guide = "axis_minor")+
-  # geom_text(data=CMOd |> filter(type!="unknown"), 
-  #           aes(x=ymd("1960-04-01"), y=22, label=last_text, color= type), 
-  #           hjust=0, vjust=1, size=7/.pt, show.legend=FALSE)+
   scale_color_manual(
     values = c(food = cocol[["CP01"]], 
                nrg = cocol[["CP07"]], 
                fer = cocol[["CP05"]])) +
   xlab("")+ylab("")+
-  facet_wrap(vars(variable), ncol = 1)+
   labs(
     title = "",
     subtitle = "",
@@ -113,23 +109,49 @@ g <- ggplot(CMOr |> filter(variable %in% selected))+
     date_minor_breaks = "1 year",
     date_labels = "%Y") 
 
-g
+g+facet_wrap(vars(variable), ncol = 2)
 
 ```
+
+## beau et utile parce que
+
+-   Calculé en termes réels, rebasé pour chaque commodité, avec un indice de prix sur 60 ans, des taux de change en *mensuel* donc un peu de travail sur les données
+
+-   des facets qui évitent le spaghetti
+
+-   échelle logarithmique qui permet de comparer les différentes commodités
+
+-   un choix de couleurs, élégant, sobre, *by Paul Malliet*, le theme_ofce
+
+mais {{< fa skull >}}{{< fa skull >}}{{< fa skull >}}
+
+## version *print*  {.scrollable}
+
+![](images/gcom2000.png){.scrollable fig-align="center" width="628"}
 
 ## + tooltip + sélection de la date \[beau, utile, moderne, facile\] {.smaller .scrollable}
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE }
 library(plotly)
-
-(g %+% theme(text = element_text(family = "arial", size = 9))) |>
-  plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE,
-                   width = 900, height = 600) |> 
-  layout(
-    yaxis = list(fixedrange=TRUE),
+gplotly <- map(
+  selected[1:4], 
+  ~(g %+% theme(text = element_text(family = "arial", size = 9))
+    %+% scale_y_continuous() 
+    %+% (CMOr |> filter(variable == .x))) |> 
+    plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE) |> 
+    layout(
+    annotations = list(list(x=0, y=2, 
+                            showarrow=FALSE, text=.x, 
+                            xref="x", yref="y", align="left")),
+    yaxis = list(fixedrange=FALSE, type="log"),
     showlegend = FALSE,
     xaxis = list(fixedrange=TRUE, rangeslider=list(visible=TRUE)),
-    hovermode = "x unified") |>  
+    hovermode = "x unified"))
+
+subplot(gplotly, 
+        shareX = TRUE, shareY = TRUE,
+        nrows=2, which_layout = 1,
+        titleY = 1) |>  
   config(displayModeBar=FALSE)
 ```
 
