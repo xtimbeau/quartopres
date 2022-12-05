@@ -123,9 +123,9 @@ g+facet_wrap(vars(variable), ncol = 2)
 
 -   un choix de couleurs, élégant, sobre, *by Paul Malliet*, le theme_ofce
 
-mais {{< fa skull >}}{{< fa skull >}}{{< fa skull >}}
+mais {{< fa skull >}} {{< fa skull >}} {{< fa skull >}}
 
-## version *print*  {.scrollable}
+## version *print* {.scrollable}
 
 ![](images/gcom2000.png){.scrollable fig-align="center" width="628"}
 
@@ -140,7 +140,7 @@ gplotly <- map(
     %+% (CMOr |> filter(variable == .x))) |> 
     plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE) |> 
     layout(
-    annotations = list(list(x=0, y=2, 
+    annotations = list(list(x=0, y=2.3, 
                             showarrow=FALSE, text=.x, 
                             xref="x", yref="y", align="left")),
     yaxis = list(fixedrange=FALSE, type="log"),
@@ -209,7 +209,7 @@ sources: eikon&Datastream
 
 -   l'aide de quarto est le point de départ : [quarto](https://quarto.org/docs)
 
--   l'interactivité repose sur des htmlwigets pour R :
+-   l'interactivité repose sur des *htmlwigets* pour R :
 
     -   [Leaflet](http://rstudio.github.io/leaflet/) (cartes, tmap utilise leaflet),
 

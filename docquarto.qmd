@@ -142,7 +142,9 @@ Quarto est un ensemble de fonctions qui permettent:
 
 -   Des graphiques produits avec `ggplot2`, des tableaux avec `gt`
 
--   un travail collaboratif avec François G. et Guillaume A. avec `github`
+-   un travail collaboratif avec François G.
+    et Guillaume A.
+    avec `github`
 
 -   différentes sorties :
 
@@ -192,7 +194,8 @@ ou
 
 -   il reste quelques bugs dans RStudio, mais c'est utilisable
 
--   Anissa S. et quelques autres développent en ce moment même des templates
+-   Anissa S.
+    et quelques autres développent en ce moment même des templates
 
 -   [La documentation complète de Quarto](https://quarto.org/docs/guide/)
 
