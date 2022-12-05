@@ -140,10 +140,10 @@ gplotly <- map(
     %+% (CMOr |> filter(variable == .x))) |> 
     plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE) |> 
     layout(
-    annotations = list(list(x=0, y=2.3, 
+    annotations = list(list(x=0, y=3, 
                             showarrow=FALSE, text=.x, 
                             xref="x", yref="y", align="left")),
-    yaxis = list(fixedrange=FALSE, type="log"),
+    yaxis = list(fixedrange=TRUE, type="log", dtick = 1),
     showlegend = FALSE,
     xaxis = list(fixedrange=TRUE, rangeslider=list(visible=TRUE)),
     hovermode = "x unified"))
