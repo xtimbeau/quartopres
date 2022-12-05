@@ -1,6 +1,6 @@
 ---
 title: "Faire beau, utile et moderne"
-subtitle: "Des graphiques interactifs dans les documents html ou dasn les présentations"
+subtitle: "Des graphiques interactifs dans les documents html ou dans les présentations"
 date: 12/05/2022
 author: Xavier Timbeau
 institute: "*OFCE/Sciences Po*"
