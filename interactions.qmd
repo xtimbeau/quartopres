@@ -1,7 +1,7 @@
 ---
 title: "Faire beau, utile et moderne"
-subtitle: "Des graphiques interactifs dans les documents html ou dasn les présentations"
-date: 5/12/2022
+subtitle: "Des graphiques interactifs dans les documents html ou dans les présentations"
+date: 12/05/2022
 author: Xavier Timbeau
 institute: "*OFCE/Sciences Po*"
 lang: fr
@@ -121,6 +121,8 @@ g+facet_wrap(vars(variable), ncol = 2)
 
 -   échelle logarithmique qui permet de comparer les différentes commodités
 
+-   une chaîne de mise à jour dans R (accès par programme à Eikon, INSEE, banque mondiale, OCDE, presque Datastream)
+
 -   un choix de couleurs, élégant, sobre, *by Paul Malliet*, le theme_ofce
 
 mais {{< fa skull >}} {{< fa skull >}} {{< fa skull >}}
@@ -143,20 +145,58 @@ gplotly <- map(
     annotations = list(list(x=0, y=3, 
                             showarrow=FALSE, text=.x, 
                             xref="x", yref="y", align="left")),
-    yaxis = list(fixedrange=TRUE, type="log", dtick = 1),
+    yaxis = list(fixedrange=FALSE, type="log", tick0 = 50, dtick = "L50"),
     showlegend = FALSE,
     xaxis = list(fixedrange=TRUE, rangeslider=list(visible=TRUE)),
     hovermode = "x unified"))
 
 subplot(gplotly, 
         shareX = TRUE, shareY = TRUE,
-        nrows=2, which_layout = 1,
+        nrows=2,
         titleY = 1) |>  
+  layout(yaxis = list(type= "log", dtick=2)) |> 
   config(displayModeBar=FALSE)
 ```
 
 ::: {style="color: gray; font-size: 14pt"}
 sources: www.worldbank.org/en/research/commodity-markets, logscale, alt-click pour zoomer
+:::
+
+## ou le retour des spaghettis ! {.smaller .scrollable}
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(plotly)
+(ggplot(CMOr |> filter(variable %in% selected))+
+  geom_line(
+    aes(x=time,
+        y=pcom_real, 
+                color=variable, 
+        group=variable,
+                text=text), 
+    show.legend = FALSE, linewidth=0.25)+
+  xlab("")+ylab("")+
+  labs(
+    title = "",
+    subtitle = "",
+    caption = caption) +
+  theme_ofce(base_family="Arial", base_size=9)+
+  scale_x_date(
+    guide="axis_minor", 
+    date_minor_breaks = "1 year",
+    date_labels = "%Y") )|> 
+  plotly::ggplotly(tooltip = "text", dynamicTicks = TRUE) |> 
+  layout(
+    yaxis = list(fixedrange=FALSE, 
+                 type="log",
+                 tick0 = 50, dtick = "L50"),
+    showlegend = TRUE,
+    xaxis = list(fixedrange=TRUE, 
+                 rangeslider=list(visible=TRUE)),
+    hovermode = "x unified") |> 
+  config(displayModeBar=FALSE)
+```
+
+::: {style="color: gray; font-size: 14pt"}
 :::
 
 ## + sélection par légende \[beau, utile, moderne, facile\]
@@ -218,6 +258,10 @@ sources: eikon&Datastream
     -   [dygraphs](http://rstudio.github.io/dygraphs/) (alternative pour les séries temporelles),
 
     -   [threejs](https://bwlewis.github.io/rthreejs/) (avec des possibilités spectaculaires)
+
+-   shiny peut être également le moteur de l'interactivité
+
+    -   fonctionnel, mais quelques réglages à opérer
 
 -   Le livre (gratuit) [Interactive web-based data visualization with R, plotly, and shiny](https://plotly-r.com/index.html)
 
