@@ -1,0 +1,207 @@
+---
+title: "La cartographie avec R"
+author: "Xavier Timbeau"
+format: 
+  revealjs:
+    center: false  
+    theme: [simple, custom.scss]
+    css: presentation.css
+    smaller: true
+    navigation-mode: vertical
+    title-slide-attributes:
+      data-background-image: carte.png
+      data-background-size: contain
+      data-background-opacity: "0.25"
+    revealjs-plugins:
+     - _extensions/fullscreen
+editor: visual
+---
+
+# Pourquoi des cartes avec R ?
+
+on peut traiter les données spatiales et réaliser des cartes avec QGIS ou d'autres logiciels
+
+-   interface adaptée, visualisation rapide
+
+-   nombreux outils de traitements
+
+-   ressources nombreuses (tuto, doc, plugin)
+
+    -   QGIS : gratuit
+
+    -   Arcgis : standard, payant, puissant (relié avec des bases de données spatiales)
+
+    -   Articque Cartes et Données payant, plus simple
+
+    -   Excel et sans doute d'autres
+
+## Pourquoi des cartes avec R ?
+
+Avec R, on va pouvoir :
+
+-   manipuler les données spatiales comme d'autres données
+
+    -   analyse statistique, économétrie spatiale
+
+-   utiliser des outils avancés
+
+    -   visualisation, visualisation interactive
+
+    -   production de sorties pour impression, pour publication interactive (HTML5)
+
+-   automatisation des process
+
+    -   de la donnée au résultat
+
+    -   production de cartes complexes (facet, inset)
+
+# Les données spatiales (I) {transition="fade" transition-speed="slow"}
+
+des données (des lignes d'observation) plus une information géographique (une géolocalisation, une forme)
+
+-   DVF : transaction, plus un point (lon/lat) ou une parcelle (un polygone localisé)
+
+-   eurostat : données par pays, région (NUTS 1 à 3), plus information géographique (contour de la région)
+
+-   OpenStreetMap : données sur le réseau de rues et route, les batiments, des lignes, des points, des polygones, des courbes, etc...
+
+-   format dit vectoriel, manipulé avec `{sf}` un package R qui permet d'accéder à la librairie GDAL/GEOS qui est un standard ouvert de manipulation de données spatiales vectorielles
+
+-   les données sont sous différents formats, souvent `.shp`, la fonction `sf::st_read` s'en occupe
+
+## Les données spatiales (II) {transition="fade" transition-speed="slow"}
+
+-   des rasters : un grand nombre de points ou de rectangles ou de carrés de taille identique qui recouvre un territoire
+
+    -   imagerie satellite (COPERNICUS)
+
+    -   données de pollution, méteo, température issues de modèle et d'intrapolation à partir d'observations discrètes
+
+    -   des outils spécifiques pour optimiser les traitements sur ces données et leur affichage
+
+    -   format dit raster
+
+# Le système de coordonnées {.nostrech transition="fade" transition-speed="slow"}
+
+*La terre est plutôt sphérique, mais elle est presque plate*
+
+coordonnées quasi-sphériques : WGS84 (World Geodetic System 1984, EPSG: 4326) tient compte de l'aplatissement de la terre, normalisé pour les GPS
+
+![](images/image-1935453598.png){fig-align="center"}
+
+## Les projections
+
+*pour faire des cartes qui sont sur des plans, il faut une projection*
+
++-----------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------+
+| Cylindrique                                   | Conique                                                                                                                                                                                                                                                                                                 | Azymutale                                     |
++:=============================================:+:=======================================================================================================================================================================================================================================================================================================:+:=============================================:+
+| ![](images/image-1738077154.png){width="139"} | ![](images/image-1412560950.png){width="145"}                                                                                                                                                                                                                                                           | ![](images/image-1234542579.png){width="234"} |
++-----------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------+
+| Mercator (conforme)                           | Lambert 93 (conique conforme) (EPSG: 2154)                                                                                                                                                                                                                                                              | Lambert équivalente azymutale                 |
+|                                               |                                                                                                                                                                                                                                                                                                         |                                               |
+| Peters (équivalente)                          | [ETRS89](https://en.wikipedia.org/wiki/European_Terrestrial_Reference_System_1989 "European Terrestrial Reference System 1989") [Lambert Azimuthal Equal-Area projection](https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection "Lambert azimuthal equal-area projection") (EPSG: 3035) | Projections gnomoniques                       |
+|                                               |                                                                                                                                                                                                                                                                                                         |                                               |
+| Robinson                                      |                                                                                                                                                                                                                                                                                                         |                                               |
++-----------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------+
+
+::: aside
+une projection **équivalente** conserve les aires, recommandé pour des cartes avec plusieurs pays ; **conforme** les angles (les formes), recommandé pour la topographie à de petites échelles ; aphylactique et projections uniques (autres systèmes)
+:::
+
+# Des projections dites *uniques* {.scrollable}
+
+| Projection de Goode pseudo cylindrique interrompue, équivalente |
+|:---------------------------------------------------------------:|
+|          ![](images/image-2137286235.png){width="200"}          |
+|           **Cossin (1570) sinusoïdale; équivalente**            |
+|          ![](images/image-2068515879.png){width="200"}          |
+|                      Projection gnomonique                      |
+|          ![](images/image-1344787406.png){width="200"}          |
+
+##  {fullscreen="true"}
+
+![](images/image-2137286235.png){fig-align="center" width="329"}
+
+##  {fullscreen="true"}
+
+![](images/image-2068515879.png){fig-align="center" width="200"}
+
+##  {fullscreen="true"}
+
+![](images/image-1344787406.png){fig-align="center" width="216"}
+
+# D'un système à l'autre
+
+Dans un `sf` ou un raster géographique, le système de coordonnées est défini
+
+-   sinon, on le défini (`data |> st_as_sf(crs=3035))` sans se tromper
+
+`st_transform(3035)` passe d'un système à la grille européenne
+
+Le choix du système permet :
+
+-   de calculer facilement les distances ou les aires (dans une projection conforme/équivalente, localement)
+
+-   de construire une grille utile pour mixer vectoriel et raster
+
+-   modifier la représentation graphique (avec des déformations plus ou moins maîtrisées)
+
+`crs=3035` est une norme européenne.
+La carreau 200, COPERNICUS sont diffusés dans ce système
+
+`crs=4326` est le format le plus courant depuis l'avènement des GPS (et des calculs informatisés de changement de coordonnées)
+
+# Ma première carte
+
+```{r, fig.align='center'}
+library(sf)
+library(tmap)
+library(cartogram)
+library(tidyverse)
+library(ofce)
+library(eurostat)
+bbox <-st_bbox( c(xmin=-25,ymin=32,xmax=47,ymax=71.5), crs = 4326)
+sf <- get_eurostat_geospatial(
+  output_class = "sf",
+  resolution = "60",
+  nuts_level = "all") 
+st_crs(sf) <- st_crs(4326)
+
+pib <- ofce::sna_get("nama_10r_3gdp")
+pop <- ofce::sna_get("nama_10r_3popgdp")
+pib <- pib |> mutate(
+  geo_label = label_eurostat(geo, dic="geo", fix_duplicated = TRUE) 
+)
+pib <- pib  |> 
+  rename(gdp = values) |> 
+  filter(geo!="EU27_2020", geo!="EU28") |>  
+  complete(unit, geo, time, fill=list(gdp=NA))  |> 
+  mutate(pays=str_sub(geo,1,2), 
+         nuts3 = str_length(str_sub(geo,3,5))==2,
+         nuts2 = str_length(str_sub(geo,3,5))==1,
+         nuts1 = str_length(str_sub(geo,3,5))==0) %>% 
+  left_join(pop  |> dplyr::select(geo, time, pop=THS), by=c("geo","time"))
+
+
+pib.sf <- left_join(
+  sf  |> dplyr::select(geo=NUTS_ID, LEVL_CODE),
+  pib |> 
+    filter(time=="2017-01-01", unit=="PPS_EU27_2020_HAB")
+  , by="geo") |>
+  st_transform(3035)
+
+mb <- mapboxapi::get_static_tiles(
+  location = pib.sf |> st_transform(4326),
+  zoom=2, 
+  style_id = "ckjka0noe1eg819qrhuu1vigs", 
+  username="xtimbeau")
+mb2 <- 255 - (255-mb)/3
+
+map <- tm_shape(pib.sf |> filter(LEVL_CODE==1), bbox=bbox)+
+  tm_fill(col="gdp", style="cont", palette="-RdBu", alpha=0.75)+
+  tm_shape(pib.sf |> filter(LEVL_CODE==0))+
+  tm_borders()
+
+tmap_leaflet(map)
+```

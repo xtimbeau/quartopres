@@ -1,0 +1,10 @@
+.reveal .header-logo {
+  height: 25px !important;
+  width: 50px !important;
+  max-width: unset !important;
+  max-height: unset !important;
+}
+
+.reveal .reveal-header p {
+  color: #e6142d;
+}

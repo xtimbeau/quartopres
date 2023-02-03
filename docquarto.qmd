@@ -3,7 +3,7 @@ title: "Produire des documents avec Quarto"
 author: "Xavier Timbeau"
 format: 
   revealjs:
-    theme: beige
+    theme: simple
     logo: ofce.png
     footer: "quarto"
 editor: visual
