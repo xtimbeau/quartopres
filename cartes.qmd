@@ -8,6 +8,7 @@ format:
     css: presentation.css
     smaller: true
     navigation-mode: vertical
+    code-fold: true
     title-slide-attributes:
       data-background-image: carte.png
       data-background-size: contain
@@ -35,7 +36,7 @@ on peut traiter les données spatiales et réaliser des cartes avec QGIS ou d'au
 
     -   Excel et sans doute d'autres
 
-## Pourquoi des cartes avec R ?
+# Pourquoi des cartes avec R ?
 
 Avec R, on va pouvoir :
 
@@ -69,7 +70,7 @@ des données (des lignes d'observation) plus une information géographique (une 
 
 -   les données sont sous différents formats, souvent `.shp`, la fonction `sf::st_read` s'en occupe
 
-## Les données spatiales (II) {transition="fade" transition-speed="slow"}
+# Les données spatiales (II) {transition="fade" transition-speed="slow"}
 
 -   des rasters : un grand nombre de points ou de rectangles ou de carrés de taille identique qui recouvre un territoire
 
@@ -87,7 +88,7 @@ des données (des lignes d'observation) plus une information géographique (une 
 
 coordonnées quasi-sphériques : WGS84 (World Geodetic System 1984, EPSG: 4326) tient compte de l'aplatissement de la terre, normalisé pour les GPS
 
-![](images/image-1935453598.png){fig-align="center"}
+![](images/image-1935453598.png){fig-align="center" width="545"}
 
 ## Les projections
 
@@ -152,9 +153,9 @@ La carreau 200, COPERNICUS sont diffusés dans ce système
 
 `crs=4326` est le format le plus courant depuis l'avènement des GPS (et des calculs informatisés de changement de coordonnées)
 
-# Ma première carte
+# Une première carte
 
-```{r, fig.align='center'}
+```{r, fig.align='center', echo=TRUE}
 library(sf)
 library(tmap)
 library(cartogram)
@@ -173,6 +174,7 @@ pop <- ofce::sna_get("nama_10r_3popgdp")
 pib <- pib |> mutate(
   geo_label = label_eurostat(geo, dic="geo", fix_duplicated = TRUE) 
 )
+
 pib <- pib  |> 
   rename(gdp = values) |> 
   filter(geo!="EU27_2020", geo!="EU28") |>  
@@ -182,7 +184,6 @@ pib <- pib  |>
          nuts2 = str_length(str_sub(geo,3,5))==1,
          nuts1 = str_length(str_sub(geo,3,5))==0) %>% 
   left_join(pop  |> dplyr::select(geo, time, pop=THS), by=c("geo","time"))
-
 
 pib.sf <- left_join(
   sf  |> dplyr::select(geo=NUTS_ID, LEVL_CODE),
@@ -205,3 +206,116 @@ map <- tm_shape(pib.sf |> filter(LEVL_CODE==1), bbox=bbox)+
 
 tmap_leaflet(map)
 ```
+
+# Cette carte pose de nombreux problèmes {.incremental}
+
+```{r}
+map
+```
+
+1.  la palette de couleur : suppose un point milieu, défini une zone "ok" une zone non "ok"
+
+2.  la surface colorée dépend de la surface des territoire.
+    Or, la donnée est une donnée de richesse par tête.
+    Donne l'impression que l'Ile de France est petite (12m) comparée à l'Irlande (5m)
+
+# Des solutions: une autre palette est possible
+
+```{r, echo=TRUE}
+#| code-line-numbers: "2"
+(tm_shape(pib.sf |> filter(LEVL_CODE==1), bbox=bbox)+
+  tm_fill(col="gdp", style="cont", palette="-viridis", alpha=0.75)+
+  tm_shape(pib.sf |> filter(LEVL_CODE==0))+
+  tm_borders() )|>
+  tmap_leaflet()
+```
+
+# Des solutions : des "dots" plutôt que des "fill"
+
+```{r, echo=TRUE}
+#| code-line-numbers: "2"
+(tm_shape(pib.sf |> filter(LEVL_CODE==1), bbox=bbox)+
+  tm_dots(col="gdp", size="pop", style="cont", palette="-viridis", alpha=0.75)+
+  tm_shape(pib.sf |> filter(LEVL_CODE==0))+
+  tm_borders() )|>
+  tmap_leaflet()
+```
+
+# On peut faire un cartogramme
+
+```{r, echo=TRUE}
+library(cartogram)
+
+cartcont <- cartogram_cont(pib.sf %>% filter(LEVL_CODE==0, !is.na(pop)),
+                           weight="pop")
+
+cartdorling <- cartogram_dorling(pib.sf %>% filter(LEVL_CODE==1, !is.na(pop)), 
+                                 weight="pop",
+                                 m_weight=1,
+                                 k=0.33)
+```
+
+::: panel-tabset
+### Continu
+
+```{r, echo=TRUE}
+#| code-line-numbers: "1"
+(tm_shape(cartcont, bbox=bbox)+
+  tm_fill(col="gdp", size="pop", style="cont", palette="-viridis", alpha=0.75)+
+  tm_borders() )|>
+  tmap_leaflet()
+```
+
+### Dorling
+
+```{r, echo=TRUE}
+#| code-line-numbers: "1"
+(tm_shape(cartdorling, bbox=bbox)+
+  tm_fill(col="gdp", style="cont", palette="-viridis", alpha=0.75)+
+  tm_shape(pib.sf |> filter(LEVL_CODE==0))+
+  tm_borders() )|>
+  tmap_leaflet()
+```
+:::
+
+# une échelle log sur les couleurs
+
+les palettes de `{scico}`, ici `batlow`
+
+```{r, echo=FALSE}
+bbox3035 <- list(xmin=2500000,ymin=1500000,xmax=7000000,ymax=5000000)
+ggplot()+
+  geom_sf(data=pib.sf |> filter(LEVL_CODE==0))+
+  geom_sf(data=cartdorling, aes(fill=gdp))+
+  coord_sf(xlim=c(bbox3035$xmin, bbox3035$xmax),
+           ylim=c(bbox3035$ymin, bbox3035$ymax), 
+           crs=3035)+
+  scico::scale_fill_scico(palette="batlow",
+                          direction=-1,
+                          trans="log", 
+                          breaks=c(10000, 25000, 60000),
+                          labels = scales::label_number(scale=1/1000,
+                                                        suffix = "k€/p/y"),
+                          name = "Pib par tête")
+
+```
+
+# Des ressources pour faire des cartes
+
+-   Des fonds de cartes
+
+    -   IGN Contours administratifs France, régions, départements, communes, IRIS, parcelles
+
+    -   Pays européens : `{eurostat}`
+
+    -   Monde `{rworldmap}`
+
+-   Des packages R pour la manipulation des données spatiales ou leur visualisation
+
+    -   `{sf}/{tidyverse}`, `{raster}/{terra}`, `{stars}`
+
+    -   `{tmap}/{leaflet}`, `{ggplot}`, `{mapdeck}/{mapboxapi}`
+
+-   Des personnes à l'OFCE
+
+    -   Paul Malliet, Maxime Parodi (\*), Xavier Timbeau
