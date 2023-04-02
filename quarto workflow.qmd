@@ -1,0 +1,375 @@
+---
+title: "Workflow avec Quarto"
+subtitle: "*Séminaire lunch de l'OFCE*"
+logo: www/ofce.png
+author:
+  - name: "Xavier Timbeau" 
+    email: "xavier.timbeau@sciencespo.fr"
+    affiliation: OFCE, Sciences Po Paris
+    affiliation-url: "http://www.ofce.fr"
+lang: fr
+date: 4/3/2023
+date-format: "dddd D MMMM YYYY"
+footer:
+  "Séminaire lunch de l'OFCE                         Workflow avec Quarto"
+transition: slide
+transition-speed: fast
+auto-stretch: true
+execute: 
+  echo: false
+  warning: false
+format: 
+  revealjs:
+    slide-level: 2
+    slide-number: c/t
+    center: false
+    theme: [simple, www/presentation.scss]
+    navigation-mode: linear
+    code-fold: false
+    self-contained: false
+    code-link: true
+filters:
+  - reveal-auto-agenda
+auto-agenda:
+  bullets: none
+  heading: ""
+editor: visual
+---
+
+# Quarto, github et HTML
+
+## Pourquoi Quarto ?
+
+Quarto permet d'éditer des documents
+
+<br>
+
+-   structurés,
+
+-   incluant des équations,
+
+-   des références croisées,
+
+-   des références bibliographiques,
+
+-   du code (R, Julia, Python simplement, mais aussi tex, SQL, SAS, ...),
+
+-   des graphiques,
+
+-   des tableaux produits par le code ou pas
+
+-   des documents automatiques ou exécutables (de la donnée au document), de travailler à plusieurs (en éditant du texte et en utilisant {{< fa brands github >}})
+
+-   produire des rendus dans différents formats (HTML5, pdf, revealjs, docx, pptx...) à partir du **même document**
+
+## Pourquoi s'embêter avec Quarto ?
+
+<br>
+
+Quarto est plus difficile que Word et Excel,
+
+mais permet plus de choses :
+
+-   travail collaboratif
+
+-   rendu HTML
+
+-   documents exécutables
+
+-   documents complexes (plusieurs fichiers, des sources de données variées)
+
+-   mises en pages normalisées
+
+-   chaînes de production intégrées de l'analyse à la publication
+
+## Un workflow ?
+
+Un workflow est une façon de travailler en appliquant une discipline qui facilite le résultat final et limite des les erreurs ou les aller-retours
+
+**Le principe :**
+
+-   si on travaille seul, on s'organise comme on veut ... *mais on ne vient pas se plaindre quand ça ne marche pas, ce n'est pas sécurisé, ce n'est pas clair*
+
+-   un travail égale un répertoire qui rassemble tout ce qui sert à exécuter le travail
+
+-   le répertoire est un dépôt {{< fa brands github >}} simple et organisé comme on veut si on travaille seul, en suivant quelques règles si on est plusieurs
+
+**Les données ne sont pas sur** {{< fa brands github >}}
+
+-   on ne travaille pas incrémentalement sur les données (source + scripts -\> données intermédiaires)
+
+-   si on travaille incrémentalement, on le fait avec des outils adaptés : SQL/serveurs de données/ disques partagés ou stockage non structuré
+
+## **Le workflow**
+
+<br>
+
+-   des données sources bien identifiées (pour la MAJ), bien structurées (pour la lisibilité du code), bien documentées (pour la transparence et la reproductibilité)
+
+-   du code qui manipule, nettoie, transforme les données (reproductible, exécutable)
+
+-   du code qui produit des graphiques, des tableaux (reproductible, exécutable)
+
+-   possiblement un code qui produit des graphiques ou des tableaux interactifs, des applications
+
+-   un texte qui raconte ce que l'on veut et utilise les données transformées, liées de façon dynamique pour faciliter la MAJ mais expliciter la dépendance
+
+-   un rendu qui est publié (site internet, imprimé) et n'est pas modifié une fois rendu
+
+Sur {{< fa brands github >}} on a le miroir et l'histoire du travail. Public ou non, comme on veut
+
+## Github
+
+![](svg/github.png){fig-align="center" width="482"}
+
+# Un post pour le blog de l'OFCE
+
+## Un graphique \[interactif, reproductible, exécutable\] {.smaller}
+
+On commence avec un graphique un peu complexe :
+
+On veut prendre les données de la Banque Mondiale sur les prix des matières premières. Les données sont sur longue période, mensuelle dans les unitées impériales ou métriques.
+
+On récupère sur le site de l'OCDE, de l'INSEE, d'Eurostat des données soit historiques, soit récentes. On jointe tout ça sans trop se poser de questions.
+
+On calcule ensuite tous les prix en euros, on change certaines unités (MWh), on utilise un indice de prix sur longue période pour déflater.
+
+```{r, eval=FALSE, echo=TRUE}
+library(tidyverse)
+library(OECD)
+library(WDI)
+library(readxl)
+library(tsibble)
+library(tsbox)
+# remotes::install_github("christophsax/tempdisagg")
+# datapasta
+library(tempdisagg)
+library(ofce)
+library(lubridate)
+library(ggh4x)
+library(showtext)
+
+sysfonts::font_add_google('Nunito')
+showtext::showtext_auto()
+
+# la source des données de prix est la banque mondiale
+# https://www.worldbank.org/en/research/commodity-markets
+fs::dir_create("data")
+download.file("https://thedocs.worldbank.org/en/doc/5d903e848db1d1b83e0ec8f744e55570-0350012021/related/CMO-Historical-Data-Monthly.xlsx",
+              destfile = "data/CMO-Historical-Data-Monthly.xlsx", mode="wb")
+
+CMO <- readxl::read_xlsx("data/CMO-Historical-Data-Monthly.xlsx", sheet = "Monthly Prices", skip = 6) |> 
+  slice(-1) |> 
+  rename(date = ...1) |> 
+  mutate(date = paste0(substr(date, 1, 4), "-", substr(date, 6, 7), "-01")  |>  as.Date())  |> 
+  gather(variable, value, -date) |> 
+  mutate(value = as.numeric(value))  |> 
+  filter(!is.na(value)) |> 
+  rename(code = variable)
+
+variable <- read_xlsx("data/CMO-Historical-Data-Monthly.xlsx", sheet = "Monthly Prices") |> 
+  slice(4, 5, 6) |> 
+  select(-1) |> 
+  t() |> 
+  as_tibble()  |> 
+  select(variable = V1, unit = V2, code = V3) |> 
+  mutate(variable = str_remove_all(variable, "\\*"))
+
+# prix, données historiques (on utilisera l'INSEE pour les données récentes)
+# sinon l'OCDE pour l'historique
+# on s'embête pas à mettre à jour donc l'OCDE
+oecd_q <- OECD::get_dataset(dataset="EO110_INTERNET", "USA+FRA+EA17.CPI+CPIH+PFDD+PCP+EXCHUD+EXCH.Q") |> 
+  rename_with(tolower) |> 
+  mutate(time = yq(time), v = as.numeric(obsvalue)) |>
+  as_tsibble(index=time, key = c(location,variable)) 
+pcp.fra <- oecd_q |> 
+  filter(location=="FRA", variable=="PCP") |> 
+  select(time, v) 
+pcp.fra <- td(formula= pcp.fra ~ 1, to = "monthly", method="fast", conversion = "mean") |> 
+  predict() |> 
+  rename(pcp = value)
+exch.fra <- oecd_q |> 
+  filter(location=="FRA", variable=="EXCH") |> 
+  select(time, v)
+exch.fra <- td(formula= exch.fra ~ 1, to = "monthly", method="fast", conversion = "mean") |>
+  predict() |>
+  rename(exch = value)
+# source INSEE
+# 2. Comptes annuels, déflateur consommation des ménages
+download.file("https://www.insee.fr/fr/statistiques/fichier/5354721/t_1103.xlsx", 
+              dest = "data/t_1103.xlsx",
+              mode="wb")
+i_ca <- readxl::read_xlsx("data/t_1103.xlsx", skip=1) |>
+  rename(var = `...1`) |>
+  pivot_longer(cols=-var) |>
+  drop_na(value) |>
+  filter(var == "Ménages") |> 
+  mutate(time = ym(str_c(name, "-01"))) |> 
+  select(time, i_ca=value) |> 
+  as_tsibble()
+i_ca <- td(formula= i_ca ~ 1, to = "monthly", method="fast", conversion = "mean") |> 
+  predict() |> 
+  rename(dc = value)
+# HICP eurostat
+sna_check_cache()
+
+hicp <- sna_get("prc_hicp_midx", coicop="CP00", geo="FR", unit="I15") |> 
+  full_join(pcp.fra, by="time") |> 
+  full_join(i_ca, by="time") |> 
+  full_join(exch.fra , by="time") |> 
+  filter(time <= max(time[!is.na(I15_CP00)])) |> 
+  arrange(desc(time)) |> 
+  mutate(tmin = min(time[!is.na(I15_CP00)]),
+         i = if_else(!is.na(I15_CP00),
+                     I15_CP00, 
+                     dc/dc[time==tmin] * I15_CP00[time==tmin])/100) |> 
+  select(time, i, pcp, exch, dc)
+
+# taux de change mensuel
+exch <- sna_get("ERT_BIL_EUR_M" |> tolower())
+
+selected <- 
+  tribble(
+    ~variable, ~type,
+    "Aluminum", "fer",
+    "Beef", "food",
+    "Coal, Australian", "nrg",
+    "Copper", "fer",
+    "Crude oil, Brent", "nrg",
+    "Gold", "fer",
+    "Natural gas, Europe", "nrg",
+    "Wheat, US HRW", "food",
+    "Phosphate rock", "fer",
+    "Zinc", "fer",
+    "Lead", "fer",
+    "Nickel", "fer",
+    "Maize", "food",
+    "Platinum", "fer",
+    "Silver", "fer",
+    "Natural gas, US", "nrg",
+    "Liquefied natural gas, Japan", "nrg",
+    "Sunflower oil", "food") |> 
+  full_join(variable, by="variable") |> 
+  arrange(type) |>  
+  group_by(type) |> 
+  mutate(typen = cur_group_id()) |> 
+  ungroup()
+
+eurdoll <- exch |> filter(currency == "USD", statinfo == "AVG") |> 
+  filter(time == max(time)) |>
+  pull(NAC)
+
+eurusd <- exch |> 
+  filter(currency=="USD", statinfo =="AVG") |> 
+  select(time, eur = NAC  )
+
+CMOr <- CMO |> 
+  rename(pcom = value, time = date) |>
+  left_join(hicp, by="time") |> 
+  left_join(eurusd, by="time") |> 
+  group_by(code) |> 
+  mutate(
+    pcom_real = pcom/exch/i,
+    pcom_real = 100*pcom_real/mean(pcom_real[between(year(time), 2018, 2018)])) |> 
+  arrange(desc(time)) |> 
+  left_join(selected, by="code") |> 
+  mutate(
+    variable = factor(variable),
+    pcom = case_when(
+      unit=="($/mmbtu)" ~ pcom/0.293297222222,
+      TRUE ~ pcom),
+    unit = case_when(
+      unit=="($/mmbtu)" ~ "$/MWh",
+      TRUE ~ unit),
+    eunit = str_replace(unit, "[$]", "€") |> str_remove_all("[()]"),
+    epcom = pcom/eur)
+
+last_date <- max(CMOr$time)
+ld_str <-  "{month(last_date, TRUE, FALSE, 'en_US.UTF-8')} {year(last_date)}" |> glue::glue()
+
+cocol <- qs::qread("data/coicops.qs") |> pull(color, name = coicop)
+CMOd  <- CMOr |> 
+  group_by(variable) |>
+  arrange(desc(time)) |> 
+  summarize(dv = first(epcom),
+            time = first(time),
+            unit = first(eunit),
+            type  = first(type)) |> 
+  ungroup() |> 
+  mutate(
+    unit = str_remove_all(unit, '[()]'),
+    date = "{month(time, TRUE, FALSE, 'en_US.UTF-8')} {year(time)}" |> glue::glue(),
+    dv_str = prettyNum(dv, digits=3, format='fg', big.mark = ','),
+    last_text = 
+      "on {date}: {dv_str} {unit}" |> glue::glue())
+```
+
+## Un peu de texte
+
+On engage ensuite la rédaction, dans RStudio.
+
+On itère sur le texte, son rendu, les graphiques.
+
+On peut ajouter des éléments, inclure des résultats dans le texte et ainsi de suite
+
+On commit sur {{< fa brands github >}} pour ne pas perdre son fil
+
+![](svg/github%20click.png){fig-align="center" width="258"}
+
+## Quelques éléments en plus
+
+<br>
+
+pour rendre le graphique interactif
+
+-   on peut utiliser `{plotly}`
+
+-   on peut insérer une application shiny
+
+-   réaliser des graphiques interactifs ou des cartes avec d'autres outils
+
+<br>
+
+-   on peut intégrer des tableaux interactifs qui présentent beaucoup d'informations mais permettent de naviguer
+
+-   on peut faire des `tabsets` pour présenter simplement beaucoup de graphiques
+
+-   on peut ajouter des outils de navigation, on peut travailler sur des documents bien plus complexes
+
+-   inclure de quoi télécharger les données (avec `{downloadthis}`)
+
+## Preview
+
+<br>
+
+-   en local
+
+<br>
+
+-   github permet de déployer un site
+
+test pour diffusion
+
+-   [MEAPS (xtimbeau.github.io)](https://xtimbeau.github.io/meaps/)
+
+-   utilisation de `quarto publish gh-pages`
+
+-   [Home : Hypothesis](https://web.hypothes.is/) pour les commentaires,
+
+    -   avantage le text est véroullié
+
+<br>
+
+-   pour la finalisation on peut inviter sur son github quelqu'un à éditer le texteÒ
+
+# Un document de travail
+
+## MEAPS
+
+# Ce qu'il reste à faire
+
+## Des templates et des packages avec une charte graphique
+
+## Un process du github de projet vers le site de l'OFCE
+
+## 
